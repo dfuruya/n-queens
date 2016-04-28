@@ -90,64 +90,81 @@ window.findNRooksSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  // var solutionCount = undefined; //fixme
-  var solutionCount = 0; 
-  
-  // create an array to represent board
-  var board = new Board({'n': n});
-  for (var i = 0; i < n; i++) {
-    board.togglePiece(i, i);
-  }
+  var solutionCount = 0;
+  var all = Math.pow(2, n) - 1;
 
-  // Heap's Algorithm
-  var permutation = function(n, arr) {
-    if (n === 1) {
-      return arr;
-    } else {
-      for (var i = 0; i < n - 1; i++) {
-        permutation(n - 1, arr);
-        if (n % 2 === 0) {
-          rowSwap(board, i, n - 1);
-        } else {
-          rowSwap(board, 0, n - 1);
-        }
-      }
-      permutation(n - 1, arr);
+  var solveBitwise = function(col) {
+    if (col === all && n > 0) {
+      solutionCount++;
+      return;
+    }
+    var poss = ~col & all;
+    while (poss) {
+      var bit = poss & -poss;
+      poss -= bit;
+      solveBitwise(col | bit);
     }
   };
 
-  var rowSwap = function(board, row1, row2) {
-    var temp = board.rows()[row1];
-    board.rows()[row1] = board.rows()[row2];
-    board.rows()[row2] = temp;
-    solutionCount++;
-  };
-
-  solutionCount++;
-  permutation(n, board);
+  solveBitwise(0);
+  // ////// original solution:
+  // var solutionCount = 0; 
   
-  // var checkBoard = new Board({'n': n});
+  // // create an array to represent board
+  // var board = new Board({'n': n});
+  // for (var i = 0; i < n; i++) {
+  //   board.togglePiece(i, i);
+  // }
 
-  // // create a helper function, pass in array
-  // var solveNRooks = function(row) {
-  //   // iterate through each column (of a row)
-  //   for (var col = 0; col < n; col++) {
-  //     checkBoard.togglePiece(row, col);
-  //     // base case: if row and col indices is n
-  //     if (row === n - 1 && col === n - 1) {
-  //       // save board to solution array
-  //       solutionCount++;
-  //       // return solution;
+  // // Heap's Algorithm
+  // var permutation = function(n, arr) {
+  //   if (n === 1) {
+  //     return arr;
+  //   } else {
+  //     for (var i = 0; i < n - 1; i++) {
+  //       permutation(n - 1, arr);
+  //       if (n % 2 === 0) {
+  //         rowSwap(board, i, n - 1);
+  //       } else {
+  //         rowSwap(board, 0, n - 1);
+  //       }
   //     }
-  //     // if no conflicts
-  //     if (!checkBoard.hasAnyRooksConflicts() && n > 1 && row < n - 1) {
-  //       // recurse with board and next row
-  //       solveNRooks(row + 1); 
-  //     }
-  //     // toggle rook off
-  //     checkBoard.togglePiece(row, col);
+  //     permutation(n - 1, arr);
   //   }
   // };
+
+  // var rowSwap = function(board, row1, row2) {
+  //   var temp = board.rows()[row1];
+  //   board.rows()[row1] = board.rows()[row2];
+  //   board.rows()[row2] = temp;
+  //   solutionCount++;
+  // };
+
+  // solutionCount++;
+  // permutation(n, board);
+  
+  // // var checkBoard = new Board({'n': n});
+
+  // // // create a helper function, pass in array
+  // // var solveNRooks = function(row) {
+  // //   // iterate through each column (of a row)
+  // //   for (var col = 0; col < n; col++) {
+  // //     checkBoard.togglePiece(row, col);
+  // //     // base case: if row and col indices is n
+  // //     if (row === n - 1 && col === n - 1) {
+  // //       // save board to solution array
+  // //       solutionCount++;
+  // //       // return solution;
+  // //     }
+  // //     // if no conflicts
+  // //     if (!checkBoard.hasAnyRooksConflicts() && n > 1 && row < n - 1) {
+  // //       // recurse with board and next row
+  // //       solveNRooks(row + 1); 
+  // //     }
+  // //     // toggle rook off
+  // //     checkBoard.togglePiece(row, col);
+  // //   }
+  // // };
 
   // solveNRooks(0);
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
@@ -205,43 +222,65 @@ window.findNQueensSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  //console.log('n is ', n);
-  var solutionCount = 0; //fixme
-  // create an array to represent board
-  var checkBoard = new Board({'n': n});
-  // create a helper function, pass in array
-  var solveNQueens = function(row, count) {
-    // create skip boolean, set to true
-    var skip = true;
-    // iterate through each column (of a row)
-    for (var col = 0; col < n; col++) {
-      checkBoard.togglePiece(row, col);
-      // if no conflicts
-      if (!checkBoard.hasAnyQueensConflicts()) {
-        // set skip flag to false
-        skip = false;
-        // recurse with board and next row
-        if (row + 1 < n) {
-          solveNQueens(row + 1, count + 1);         
-        }
-      }
-      // base case: if row and col indices is n
-      //also check that number of queens is equal to n
-      if (!checkBoard.hasAnyQueensConflicts() && count === n) {
-        //if so, push to solution 
-        // save board to solution array
-        solutionCount++;
-      }
-      // toggle queen off
-      checkBoard.togglePiece(row, col);
-      // if at last column and skip is still true,
-      // and the next row is in bounds,
-      if (skip && row + 1 < n && col === n - 1) {
-        solveNQueens(row + 1, count); 
-      }
+  //Martin Richard's bitwise solution
+
+  var solutionCount = 0;
+  var all = Math.pow(2, n) - 1;
+ 
+  var solveBitwise = function (ld, col, rd) {
+    if (col === all && n > 0) {
+      solutionCount++;
+      return;
+    }
+    var poss = ~( ld | col | rd ) & all;
+    while (poss) {
+      var bit = poss & -poss;
+      poss -= bit;
+      solveBitwise((ld | bit) << 1, (col | bit), (rd | bit) >> 1);
     }
   };
-  solveNQueens(0, 1);
+
+  solveBitwise(0, 0, 0);
+  
+  //our original solution
+  
+  // //console.log('n is ', n);
+  // var solutionCount = 0; //fixme
+  // // create an array to represent board
+  // var checkBoard = new Board({'n': n});
+  // // create a helper function, pass in array
+  // var solveNQueens = function(row, count) {
+  //   // create skip boolean, set to true
+  //   var skip = true;
+  //   // iterate through each column (of a row)
+  //   for (var col = 0; col < n; col++) {
+  //     checkBoard.togglePiece(row, col);
+  //     // if no conflicts
+  //     if (!checkBoard.hasAnyQueensConflicts()) {
+  //       // set skip flag to false
+  //       skip = false;
+  //       // recurse with board and next row
+  //       if (row + 1 < n) {
+  //         solveNQueens(row + 1, count + 1);         
+  //       }
+  //     }
+  //     // base case: if row and col indices is n
+  //     //also check that number of queens is equal to n
+  //     if (!checkBoard.hasAnyQueensConflicts() && count === n) {
+  //       //if so, push to solution 
+  //       // save board to solution array
+  //       solutionCount++;
+  //     }
+  //     // toggle queen off
+  //     checkBoard.togglePiece(row, col);
+  //     // if at last column and skip is still true,
+  //     // and the next row is in bounds,
+  //     if (skip && row + 1 < n && col === n - 1) {
+  //       solveNQueens(row + 1, count); 
+  //     }
+  //   }
+  // };
+  // solveNQueens(0, 1);
 
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
