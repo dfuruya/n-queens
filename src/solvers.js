@@ -16,35 +16,40 @@
 
 
 window.findNRooksSolution = function(n) {
-  var solution = undefined; 
-  var board = new Board({n: n});
-  var rowIndx = 0;
-  var colIndx = 0;
-  var allRows = board.rows();
+  var solution = []; 
 
-  var findRookSoln = function(board, rooksLeft) {
-
-    for (rowIndx; rowIndx < allRows.length; rowIndx++) {
-      for (colIndx; colIndx < allRows[rowIndx].length; colIndx++) {
-        board.togglePiece(rowIndx, colIndx);
-        if (board.hasAnyRooksConflicts()) {
-          board.togglePiece(rowIndx, colIndx);
+  // create a helper function, pass in array
+  var solveNRooks = function(matrix, row) {
+    // create an array to represent board
+    var checkBoard = new Board(matrix);
+    // iterate through each column (of a row)
+    for (var col = 0; col < n; col++) {
+      checkBoard.togglePiece(row, col);
+      // base case: if row and col indices is n
+      if (row === n - 1 && col === n - 1) {
+        var arr = [];
+        for (var i = 0; i < n; i++) {
+          arr.push(checkBoard.rows()[i].slice());
         }
-        rooksLeft--;
-        findRookSoln(board, rooksLeft);
+        // save board to solution array
+        solution.push(arr);
+        return solution;
       }
+      // if no conflicts
+      if (!checkBoard.hasAnyRooksConflicts() && n > 1 && row < n - 1) {
+        // recurse with board and next row
+        solveNRooks(checkBoard.rows(), row + 1); 
+      }
+      // toggle rook off
+      checkBoard.togglePiece(row, col);
     }
-    solution = board.rows();
-    if (rooksLeft === 0) {
-      return solution;
-    }
-
-    console.log('solution: ', solution);
   };
 
-  findRookSoln(board, n);
+  var board = new Board({'n': n});
+  solveNRooks(board.rows(), 0);
 
-  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
+  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution[0]));
+  return solution[0];
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
